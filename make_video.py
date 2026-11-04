@@ -1148,6 +1148,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     else:
         transition_text = "cut"
 
+    # Urvalet görs en gång och används för alla jobb. Därmed får top- och
+    # side-filerna exakt samma samples i samma ordning och samma tidslinje,
+    # vilket krävs när filmerna spelas upp sida vid sida.
     jobs = plan_render_jobs(args)
     ffmpeg = resolve_ffmpeg(args.ffmpeg, required=not args.dry_run)
 

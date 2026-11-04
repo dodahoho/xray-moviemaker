@@ -170,6 +170,26 @@ uv run make_video.py --help
 - Vid `--view separate` görs urvalet **en gång** och används för båda filerna, så
   `top` och `side` visar exakt samma samples i samma ordning.
 
+### Synkronisering mellan top och side
+
+Standardkörningen använder samma sampellista, samma `--fps` och samma tidsberäkning
+för båda filerna. Vid varje tidpunkt visar därför `top`- och `side`-filerna samma
+sample (samma objekt) i respektive vy. Filmerna har också samma antal bildrutor och
+samma längd, så de kan startas samtidigt och spelas sida vid sida utan att glida
+ifrån varandra.
+
+Om du i stället renderar vyerna med separata kommandon måste du använda samma
+`--seed` (och samma `-n`, `--order`, `--positive-ratio` m.m.) för att få samma
+ordning. Standardseed `1234` ger samma urval varje gång.
+
+```powershell
+# Samma urval, men två separata körningar
+uv run make_video.py --view top -o overhead.mp4
+uv run make_video.py --view side -o side.mp4
+```
+
+Använd inte `--seed -1` för separata körningar, eftersom det ger olika urval.
+
 Total videolängd är `antal bilder × seconds-per-image`. För `push`/`fade` sker
 övergången i slutet av varje bilds tidslucka och ingår i den tiden. För `slide`
 rör sig bilderna kontinuerligt under hela videon – det finns ingen stillastående

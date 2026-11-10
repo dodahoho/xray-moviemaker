@@ -70,17 +70,17 @@ Därefter går det snabbt.
 
 ## Färg, komprimering och videoformat
 
-Standard är **H.264 (`libx264`) med 4:4:4** (`yuv444p`, i praktiken
-`yuvj444p` när fullt färgomfång används), alltså ingen chroma-subsampling, fullt
-färgomfång (`pc`) och CRF 18. Det undviker den färgförskjutning som 4:2:0/4:2:2 kan
-ge.
+Standard är **H.264 (`libx264`) med 4:2:0** (`yuv420p`), alltså det format som har
+bästa stödet i Windows Mediaspelare, fullt färgomfång (`pc`) och CRF 18. 4:2:0 ger
+litt sämre färgnoggrannhet än 4:4:4, men spelar upp utan problem i vanliga
+Windows-spelare.
 
 För att styra detta finns:
 
 | Flagga | Beskrivning |
 | --- | --- |
 | `--codec` | `libx264` (standard), `libx264rgb`, `libx265`, `ffv1`, m.fl. |
-| `--pix-fmt` | Pixelfomat. Standard väljs automatiskt: `yuv444p`, `rgb24` för `libx264rgb`, `bgr0` för `ffv1`. |
+| `--pix-fmt` | Pixelfomat. Standard väljs automatiskt: `yuv420p`, `rgb24` för `libx264rgb`, `bgr0` för `ffv1`. |
 | `--crf` | Kvalitet för x264/x265. Lägre = bättre, `0` = förlustfri. Standard `18`. |
 | `--lossless` | Förlustfri kodning. CRF 0 för x264/x265; FFV1 är alltid förlustfri. |
 | `--format` | Tvinga container, t.ex. `mp4` eller `matroska`. Annars styrs det av filändelsen. |
@@ -90,7 +90,8 @@ För att styra detta finns:
 ### Rekommendationer
 
 ```powershell
-# Standard: två filer (top/side), 4:4:4, bra balans mellan kvalitet och filstorlek
+# Standard: två filer (top/side), 4:2:0, bra balans mellan kvalitet och
+# filstorlek – spelar upp i Windows Mediaspelare.
 uv run make_video.py
 
 # En enda video med båda vyerna sida vid sida
@@ -102,18 +103,15 @@ uv run make_video.py --lossless --codec libx264rgb -o exact_rgb.mkv
 # FFV1: förlustfritt arkivformat för analys, ännu större filer
 uv run make_video.py --codec ffv1 -o archive.mkv
 
-# Bred spelarkompatibilitet, men 4:2:0 och sämre färgnoggrannhet
-uv run make_video.py --pix-fmt yuv420p -o compatible.mp4
+# Bättre färgnoggrannhet (4:4:4) – spelarkompatibilitet kan saknas på vissa
+# system.
+uv run make_video.py --pix-fmt yuv444p -o high_fidelity.mp4
 ```
 
 Om detektionsmodellen ska matcha videobilder mot PNG-bilderna är
-`libx264rgb` med `--lossless`, eller `ffv1`, säkrast. `yuv444p` undviker
-chroma-subsampling men är fortfarande en komprimerad YUV-video. Väljer du
-`yuv420p`/`yuv422p` skriver scriptet en varning.
-
-H.264 med 4:4:4 eller RGB kan sakna stöd i vissa webbläsare och hårdvaruacceleration.
-För uppspelning i vanliga spelare kan `--pix-fmt yuv420p` behövas, men det är alltså
-en avvägning mot färgnoggrannheten.
+`libx264rgb` med `--lossless`, eller `ffv1`, säkrast. `yuv444p` (kan anges med
+`--pix-fmt yuv444p`) undviker chroma-subsampling men är fortfarande en
+komprimerad YUV-video.
 
 ## Viktiga parametrar
 
@@ -142,7 +140,7 @@ en avvägning mot färgnoggrannheten.
 | `--codec` | `libx264` | Videokodek. Använd `libx264rgb` eller `ffv1` för exakt RGB. |
 | `--crf`, `--preset` | `18`, `medium` | Kvalitet/inställning för `libx264`/`libx265`. |
 | `--lossless` | av | Förlustfri kodning (CRF 0 för x264/x265). |
-| `--pix-fmt` | auto | `yuv444p`, `rgb24` för `libx264rgb`, `bgr0` för `ffv1`. |
+| `--pix-fmt` | auto | `yuv420p`, `rgb24` för `libx264rgb`, `bgr0` för `ffv1`. |
 | `--format` | auto | Tvinga container, t.ex. `mp4` eller `matroska`. |
 | `--color-range` | `pc` | Fullt färgomfång. `tv` ger begränsat omfång. |
 | `--ffmpeg` | auto | Egen sökväg till `ffmpeg.exe`. |
@@ -293,9 +291,8 @@ uv run make_video.py --dry-run
   `--allow-repeat`.
 - **`--width och --height måste vara jämna tal`** – använd t.ex. `1280x720` eller
   `1920x1080`.
-- **Varning om chroma-subsampling** – du har valt t.ex. `--pix-fmt yuv420p`. Använd
-  standardvärdet `yuv444p`, eller `--lossless --codec libx264rgb`/`--codec ffv1` för
-  bäst färgnoggrannhet.
+- **Varning om chroma-subsampling** – du har valt t.ex. `--pix-fmt yuv444p`. Använd
+  standardvärdet `yuv420p` för bäst spelarkompatibilitet, eller `--lossless --codec libx264rgb`/`--codec ffv1` för bäst färgnoggrannhet.
 - **`FFV1 kan inte skrivas till .mp4`** – använd `-o video.mkv` eller
   `--format matroska`.
 - **Långsam rendering** – sänk `--fps`, använd `--preset fast` eller mindre

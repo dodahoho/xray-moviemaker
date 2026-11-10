@@ -655,14 +655,15 @@ def resolve_ffmpeg(explicit: str | None, required: bool = True) -> str:
 
 
 def resolve_pix_fmt(codec: str, explicit: str | None) -> str:
-    """Välj pixelfomat. Standard är 4:4:4, dvs. ingen chroma-subsampling."""
+    """Välj pixelfomat. Standard är yuv420p (bästa kompatibilitet i Windows
+Mediaspelare). Använd yuv444p, rgb24 eller bgr0 för bättre färgnoggrannhet."""
     if explicit:
         return explicit
     if codec == "libx264rgb":
         return "rgb24"
     if codec == "ffv1":
         return "bgr0"
-    return "yuv444p"
+    return "yuv420p"
 
 
 def is_rgb_pix_fmt(pix_fmt: str) -> bool:
@@ -1000,8 +1001,8 @@ def build_parser() -> argparse.ArgumentParser:
         "--pix-fmt",
         default=None,
         help=(
-            "Pixelfomat. Standard: yuv444p (ingen chroma-subsampling), "
-            "rgb24 för libx264rgb och bgr0 för ffv1."
+            "Pixelfomat. Standard: yuv420p (bäst för Windows Mediaspelare); "
+            "använd yuv444p, rgb24 eller bgr0 för bättre färgnoggrannhet."
         ),
     )
     video.add_argument(
